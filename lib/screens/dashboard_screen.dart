@@ -1,75 +1,17 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
-import '../config/api_config.dart';
-import '../models/sensor_reading.dart';
-import '../services/sensor_api_service.dart';
+import '../data/demo_data.dart';
+import '../widgets/demo_badge.dart';
+import '../widgets/section_title.dart';
 import '../widgets/sensor_card.dart';
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key, this.sensorApiService});
-
-  final SensorApiService? sensorApiService;
-
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
-  late final SensorApiService _sensorApiService;
-  Timer? _refreshTimer;
-  SensorReading? _reading;
-  String? _errorMessage;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _sensorApiService = widget.sensorApiService ?? const SensorApiService();
-    _loadSensor();
-    _refreshTimer = Timer.periodic(
-      const Duration(seconds: 10),
-      (_) => _loadSensor(showLoading: false),
-    );
-  }
-
-  @override
-  void dispose() {
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _loadSensor({bool showLoading = true}) async {
-    if (showLoading && mounted) {
-      setState(() => _isLoading = true);
-    }
-
-    try {
-      final reading = await _sensorApiService.fetchLatest();
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _reading = reading;
-        _errorMessage = null;
-        _isLoading = false;
-      });
-    } on SensorApiException catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        _errorMessage = error.message;
-        _isLoading = false;
-      });
-    }
-  }
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final reading = DemoData.latest;
+
     return Scaffold(
       appBar: AppBar(
         title: const Column(
@@ -82,237 +24,157 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Muat ulang',
-            onPressed: _isLoading ? null : _loadSensor,
-            icon: const Icon(Icons.refresh_rounded),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: CircleAvatar(child: Icon(Icons.person_outline_rounded)),
           ),
-          const SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadSensor,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-            children: [
-              _ConnectionBanner(
-                isLoading: _isLoading,
-                errorMessage: _errorMessage,
-                reading: _reading,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Kondisi Terkini',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (_isLoading && _reading == null)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 80),
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              else ...[
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final cardWidth = constraints.maxWidth >= 700
-                        ? (constraints.maxWidth - 12) / 2
-                        : constraints.maxWidth;
-
-                    return Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        SensorCard(
-                          width: cardWidth,
-                          label: 'Suhu Udara',
-                          value: _format(_reading?.temperature, 1),
-                          unit: '°C',
-                          icon: Icons.thermostat_rounded,
-                          color: const Color(0xFFE7683F),
-                          caption: 'Sensor DHT22',
-                        ),
-                        SensorCard(
-                          width: cardWidth,
-                          label: 'Kelembapan',
-                          value: _format(_reading?.humidity, 1),
-                          unit: '%',
-                          icon: Icons.water_drop_rounded,
-                          color: const Color(0xFF2878C8),
-                          caption: 'Kelembapan udara',
-                        ),
-                        SensorCard(
-                          width: cardWidth,
-                          label: 'pH Air',
-                          value: _format(_reading?.ph, 1),
-                          icon: Icons.science_rounded,
-                          color: const Color(0xFF7B61B3),
-                          caption: _reading?.phStatus ?? 'Tidak Diketahui',
-                        ),
-                        SensorCard(
-                          width: cardWidth,
-                          label: 'TDS Nutrisi',
-                          value: _format(_reading?.tds, 0),
-                          unit: 'ppm',
-                          icon: Icons.opacity_rounded,
-                          color: const Color(0xFF16845B),
-                          caption: _reading?.tdsStatus ?? 'Tidak Diketahui',
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                _InfoCard(reading: _reading),
-              ],
-              if (_errorMessage != null && _reading == null) ...[
-                const SizedBox(height: 20),
-                FilledButton.icon(
-                  onPressed: _loadSensor,
-                  icon: const Icon(Icons.sync_rounded),
-                  label: const Text('Coba lagi'),
-                ),
-                const SizedBox(height: 12),
-                SelectableText(
-                  'Endpoint: ${ApiConfig.latestSensorUrl}',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ],
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+        children: [
+          const DemoBadge(),
+          const SizedBox(height: 16),
+          _WelcomeCard(),
+          const SizedBox(height: 22),
+          const SectionTitle(
+            title: 'Kondisi terkini',
+            subtitle: 'Ringkasan perangkat Hidroponik Utama',
           ),
-        ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth >= 700
+                  ? (constraints.maxWidth - 12) / 2
+                  : constraints.maxWidth;
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  SensorCard(
+                    width: width,
+                    label: 'pH Air',
+                    value: reading.ph?.toStringAsFixed(1) ?? '—',
+                    icon: Icons.science_rounded,
+                    color: const Color(0xFF7454B8),
+                    caption: 'Rentang awal 5.5–6.5',
+                  ),
+                  SensorCard(
+                    width: width,
+                    label: 'TDS Nutrisi',
+                    value: reading.tds?.toStringAsFixed(0) ?? '—',
+                    unit: 'ppm',
+                    icon: Icons.water_drop_rounded,
+                    color: const Color(0xFF16845B),
+                    caption: 'Rentang awal 560–840 ppm',
+                  ),
+                  SensorCard(
+                    width: width,
+                    label: 'Suhu Air',
+                    value:
+                        reading.waterTemperature?.toStringAsFixed(1) ?? '—',
+                    unit: '°C',
+                    icon: Icons.device_thermostat_rounded,
+                    color: const Color(0xFF2878C8),
+                    caption: 'Sensor DS18B20',
+                  ),
+                  SensorCard(
+                    width: width,
+                    label: 'Kelembapan Udara',
+                    value: reading.airHumidity?.toStringAsFixed(1) ?? '—',
+                    unit: '%',
+                    icon: Icons.water_drop_outlined,
+                    color: const Color(0xFFE7683F),
+                    caption: 'DHT22 opsional',
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          const _SummaryCard(),
+        ],
       ),
     );
   }
-
-  String _format(double? value, int fractionDigits) {
-    return value?.toStringAsFixed(fractionDigits) ?? '—';
-  }
 }
 
-class _ConnectionBanner extends StatelessWidget {
-  const _ConnectionBanner({
-    required this.isLoading,
-    required this.errorMessage,
-    required this.reading,
-  });
-
-  final bool isLoading;
-  final String? errorMessage;
-  final SensorReading? reading;
-
+class _WelcomeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final hasError = errorMessage != null;
-    final color = hasError ? Colors.red.shade700 : const Color(0xFF16845B);
-    final icon = hasError ? Icons.cloud_off_rounded : Icons.cloud_done_rounded;
-    final title = hasError
-        ? 'API tidak terhubung'
-        : isLoading
-        ? 'Memperbarui data...'
-        : 'ESP32 terhubung';
-    final subtitle = hasError
-        ? errorMessage!
-        : 'Data diperbarui otomatis setiap 10 detik';
-
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.09),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF16845B), Color(0xFF2FA778)],
+        ),
+        borderRadius: BorderRadius.circular(22),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          Icon(icon, color: color),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                  'Selamat datang!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Pantau kondisi hidroponik dari satu aplikasi.',
+                  style: TextStyle(color: Colors.white70),
+                ),
               ],
             ),
           ),
-          if (isLoading)
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: color),
-            ),
+          Icon(Icons.eco_rounded, color: Colors.white, size: 52),
         ],
       ),
     );
   }
 }
 
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.reading});
-
-  final SensorReading? reading;
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard();
 
   @override
   Widget build(BuildContext context) {
-    final timestamp = reading?.timestamp;
-    final time = timestamp == null
-        ? 'Belum tersedia'
-        : '${timestamp.day.toString().padLeft(2, '0')}/'
-              '${timestamp.month.toString().padLeft(2, '0')}/'
-              '${timestamp.year} '
-              '${timestamp.hour.toString().padLeft(2, '0')}:'
-              '${timestamp.minute.toString().padLeft(2, '0')}';
-
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+      child: const Padding(
+        padding: EdgeInsets.all(18),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _InfoRow(
-              icon: Icons.memory_rounded,
-              label: 'Sumber data',
-              value: (reading?.source ?? '—').toUpperCase(),
+            CircleAvatar(
+              backgroundColor: Color(0xFFE8F5EF),
+              child: Icon(Icons.check_circle_outline, color: Color(0xFF16845B)),
             ),
-            const Divider(height: 24),
-            _InfoRow(
-              icon: Icons.schedule_rounded,
-              label: 'Pembaruan terakhir',
-              value: time,
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Contoh ringkasan kondisi',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Area ini nantinya diisi hasil analisis data sensor dan kondisi tanaman.',
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(width: 12),
-        Expanded(child: Text(label)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-      ],
     );
   }
 }

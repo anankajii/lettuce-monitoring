@@ -1,5 +1,99 @@
 # Panduan Pengerjaan Tim — Smart Hydroponic Mobile
 
+> **Dokumen aktif:** setiap anggota wajib memperbarui file ini ketika mengambil, mengerjakan, menyelesaikan, atau membatalkan sebuah task. Jangan menunggu akhir sprint untuk memperbarui status.
+
+## Tracker Pekerjaan Tim
+
+Gunakan tabel ini sebagai sumber status utama. Tambahkan baris jika ada task baru.
+
+Status yang diperbolehkan:
+
+- `⬜ Belum` — belum diambil;
+- `🟨 Dikerjakan` — sedang dikerjakan;
+- `🟦 Review` — pull request sudah dibuka;
+- `✅ Selesai` — sudah direview dan di-merge;
+- `⛔ Terblokir` — tidak dapat dilanjutkan, tulis alasannya pada catatan.
+
+| ID | Task | Prioritas | Penanggung jawab | Branch | Status | PR/Issue | Catatan |
+|---|---|---|---|---|---|---|---|
+| MOB-001 | Inisialisasi Firebase di `main.dart` | P0 | - | - | ⬜ Belum | - | - |
+| MOB-002 | Perbarui model `SensorReading` | P0 | - | - | ⬜ Belum | - | - |
+| MOB-003 | Buat `SensorRepository` | P0 | - | - | ⬜ Belum | - | - |
+| MOB-004 | Buat Firebase realtime service | P0 | - | - | ⬜ Belum | - | - |
+| MOB-005 | Migrasi dashboard dari HTTP ke Firebase | P0 | - | - | ⬜ Belum | - | - |
+| MOB-006 | Test model dan repository Firebase | P0 | - | - | ⬜ Belum | - | - |
+| MOB-007 | Loading, empty, offline, dan error state | P0 | - | - | ⬜ Belum | - | - |
+| MOB-008 | Design system dan theme global | P1 | - | - | ⬜ Belum | - | - |
+| MOB-009 | Dashboard final responsif | P1 | - | - | ⬜ Belum | - | - |
+| MOB-010 | Navigasi aplikasi | P1 | - | - | ⬜ Belum | - | - |
+| MOB-011 | Query riwayat berdasarkan timestamp | P1 | - | - | ⬜ Belum | - | - |
+| MOB-012 | Halaman riwayat dan grafik | P1 | - | - | ⬜ Belum | - | - |
+| MOB-013 | Analisis status dan ambang sensor | P1 | - | - | ⬜ Belum | - | - |
+| MOB-014 | Status ESP32 online/offline | P1 | - | - | ⬜ Belum | - | - |
+| MOB-015 | Firebase Authentication | P1 | - | - | ⬜ Belum | - | - |
+| MOB-016 | User-device mapping dan Security Rules | P1 | - | - | ⬜ Belum | - | - |
+| MOB-017 | Push notification | P2 | - | - | ⬜ Belum | - | - |
+| MOB-018 | Kamera dan galeri | P2 | - | - | ⬜ Belum | - | - |
+| MOB-019 | Upload foto ke Firebase Storage | P2 | - | - | ⬜ Belum | - | - |
+| MOB-020 | Eksperimen algoritma klasifikasi | P2 | - | - | ⬜ Belum | - | - |
+| MOB-021 | Integrasi model analisis tanaman | P2 | - | - | ⬜ Belum | - | - |
+| MOB-022 | Halaman hasil dan riwayat klasifikasi | P2 | - | - | ⬜ Belum | - | - |
+| MOB-023 | Halaman pengaturan perangkat | P2 | - | - | ⬜ Belum | - | - |
+| MOB-024 | App icon dan splash screen | P3 | - | - | ⬜ Belum | - | - |
+| MOB-025 | Release signing Android | P3 | - | - | ⬜ Belum | - | - |
+| MOB-026 | Pengujian perangkat fisik | P3 | - | - | ⬜ Belum | - | - |
+| MOB-027 | Production Firebase Rules | P3 | - | - | ⬜ Belum | - | - |
+| MOB-028 | Build Android App Bundle | P3 | - | - | ⬜ Belum | - | - |
+
+### Cara mengambil task
+
+Sebelum mulai coding:
+
+1. Pilih task berstatus `⬜ Belum`.
+2. Pastikan tidak ada anggota lain yang mengerjakan file yang sama.
+3. Isi nama pada kolom **Penanggung jawab**.
+4. Buat dan tulis nama branch.
+5. Ubah status menjadi `🟨 Dikerjakan`.
+6. Commit perubahan tracker bersama commit awal atau pull request dokumentasi kecil.
+
+Contoh:
+
+```text
+| MOB-004 | Buat Firebase realtime service | P0 | Anan | feature/firebase-realtime | 🟨 Dikerjakan | #12 | Implementasi awal |
+```
+
+### Ketika pull request dibuka
+
+1. Ubah status menjadi `🟦 Review`.
+2. Isi nomor/link pull request.
+3. Pastikan checklist task dan checklist PR sudah dicentang.
+4. Jangan mengubah status menjadi selesai sebelum PR di-merge.
+
+### Setelah pull request di-merge
+
+1. Ubah status menjadi `✅ Selesai`.
+2. Centang item terkait pada bagian **Prioritas Pengerjaan**.
+3. Tulis nomor PR final.
+4. Perbarui `DOKUMENTASI.md` jika ada perubahan arsitektur atau kontrak data.
+5. Ambil task berikutnya hanya setelah tracker terbaru masuk ke `main`.
+
+### Jika task terblokir
+
+Ubah status menjadi `⛔ Terblokir` dan jelaskan:
+
+- penyebab;
+- hal yang sudah dicoba;
+- bantuan/keputusan yang dibutuhkan;
+- task lain yang ikut terpengaruh.
+
+### Aturan checklist
+
+- `[ ]` berarti belum selesai.
+- `[x]` berarti implementasi sudah direview, dites, dan di-merge.
+- Jangan mencentang task hanya karena kode sudah ada di branch lokal.
+- Jika task dibuka kembali karena bug, ubah `[x]` kembali menjadi `[ ]` dan status tracker menjadi `🟨 Dikerjakan`.
+- Orang yang melakukan merge bertanggung jawab memastikan tracker ikut diperbarui.
+
 ## 1. Tujuan
 
 Repository ini berisi aplikasi mobile Smart Hydroponic yang dibuat dengan Flutter dan Firebase. Aplikasi digunakan untuk memantau:
@@ -21,15 +115,15 @@ Produk akhir hanya menggunakan aplikasi mobile sebagai antarmuka utama. Laravel 
 Yang sudah tersedia:
 
 - project Flutter Android dan Web;
-- dashboard awal;
-- kartu suhu, kelembapan, pH, dan TDS;
-- model `SensorReading` versi Laravel API;
-- service HTTP ke Laravel;
-- refresh otomatis setiap 10 detik;
-- penanganan loading dan error;
-- widget test dasar;
-- konfigurasi Firebase Android dan Web;
-- paket `firebase_core` dan `firebase_database`;
+- base UI lima halaman: Beranda, Monitoring, Riwayat, Analisis, dan Deteksi;
+- bottom navigation;
+- kartu pH, TDS, suhu air, suhu udara, dan kelembapan;
+- model `SensorReading` dasar;
+- data demo lokal;
+- placeholder grafik, kamera, analisis, dan hasil klasifikasi;
+- widget test base UI dan navigasi;
+- berkas referensi project Firebase untuk integrasi tahap berikutnya;
+- dependensi dan plugin runtime Firebase belum diaktifkan;
 - Firebase project `lettuce-monitoring-165fd`.
 
 Yang belum selesai:
@@ -45,6 +139,8 @@ Yang belum selesai:
 - fitur kamera/analisis tanaman belum tersedia;
 - pengaturan perangkat belum tersedia;
 - test coverage masih minimal.
+
+> Base APK sengaja hanya berisi UI. Jangan menganggap data demo atau placeholder sebagai implementasi fitur. Setiap fungsi harus dikerjakan melalui task terpisah dan checklist diperbarui setelah PR di-merge.
 
 ## 3. Teknologi
 

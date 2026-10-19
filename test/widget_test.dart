@@ -1,34 +1,40 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 import 'package:mobile/main.dart';
-import 'package:mobile/screens/dashboard_screen.dart';
-import 'package:mobile/services/sensor_api_service.dart';
 
 void main() {
-  testWidgets('dashboard displays sensor values from API', (tester) async {
-    final client = MockClient((_) async {
-      return http.Response(
-        '{"ph":6.2,"tds":800,"temperature":27.5,"humidity":74.2,'
-        '"source":"esp32","ph_status":"Normal","tds_status":"Normal",'
-        '"timestamp":"2026-10-01 12:00:00"}',
-        200,
-      );
-    });
+  testWidgets('base app displays demo dashboard and navigation', (tester) async {
+    await tester.pumpWidget(const HydroponicApp());
 
-    await tester.pumpWidget(
-      HydroponicApp(
-        home: DashboardScreen(
-          sensorApiService: SensorApiService(client: client),
-        ),
-      ),
-    );
+    expect(find.text('Lettuce Monitor'), findsOneWidget);
+    expect(find.textContaining('Mode UI demo'), findsOneWidget);
+    expect(find.text('pH Air'), findsOneWidget);
+    expect(find.text('TDS Nutrisi'), findsOneWidget);
+    expect(find.text('Suhu Air'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
+  testWidgets('navigation opens detection placeholder', (tester) async {
+    await tester.pumpWidget(const HydroponicApp());
+
+    await tester.tap(find.text('Deteksi'));
     await tester.pumpAndSettle();
 
-    expect(find.text('27.5'), findsOneWidget);
-    expect(find.text('74.2'), findsOneWidget);
-    expect(find.text('6.2'), findsOneWidget);
-    expect(find.text('800'), findsOneWidget);
-    expect(find.text('ESP32 terhubung'), findsOneWidget);
+    expect(find.text('Deteksi Tanaman'), findsOneWidget);
+    expect(find.text('Belum dianalisis'), findsOneWidget);
+    expect(find.text('Belum dipilih'), findsOneWidget);
+  });
+
+  testWidgets('camera action explains that feature is not active', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const HydroponicApp());
+
+    await tester.tap(find.text('Deteksi'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kamera'));
+    await tester.pump();
+
+    expect(find.textContaining('Kamera belum diaktifkan'), findsOneWidget);
   });
 }

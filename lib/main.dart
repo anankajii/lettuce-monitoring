@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/dashboard_screen.dart';
+import 'screens/app_shell.dart';
 
 void main() {
   runApp(const HydroponicApp());
@@ -19,10 +19,7 @@ class HydroponicApp extends StatelessWidget {
       title: 'Lettuce Monitor',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: seedColor,
-          brightness: Brightness.light,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
         scaffoldBackgroundColor: const Color(0xFFF4F7F5),
         useMaterial3: true,
         cardTheme: const CardThemeData(
@@ -30,8 +27,9 @@ class HydroponicApp extends StatelessWidget {
           color: Colors.white,
           margin: EdgeInsets.zero,
         ),
+        navigationBarTheme: const NavigationBarThemeData(height: 72),
       ),
-      home: home ?? const DashboardScreen(),
+      home: home ?? const AppShell(),
     );
   }
 }
