@@ -16,12 +16,12 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
 
-  static const _screens = [
-    DashboardScreen(),
-    MonitoringScreen(),
-    HistoryScreen(),
-    AnalysisScreen(),
-    DetectionScreen(),
+  late final List<Widget> _screens = [
+    const DashboardScreen(),
+    const MonitoringScreen(),
+    const HistoryScreen(),
+    const AnalysisScreen(),
+    const DetectionScreen(),
   ];
 
   @override
@@ -30,13 +30,12 @@ class _AppShellState extends State<AppShell> {
       body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
-        },
+        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        elevation: 8,
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded),
+            icon: Icon(Icons.eco_outlined),
+            selectedIcon: Icon(Icons.eco_rounded),
             label: 'Beranda',
           ),
           NavigationDestination(
@@ -46,6 +45,7 @@ class _AppShellState extends State<AppShell> {
           ),
           NavigationDestination(
             icon: Icon(Icons.history_rounded),
+            selectedIcon: Icon(Icons.history_rounded),
             label: 'Riwayat',
           ),
           NavigationDestination(
@@ -54,8 +54,8 @@ class _AppShellState extends State<AppShell> {
             label: 'Analisis',
           ),
           NavigationDestination(
-            icon: Icon(Icons.camera_alt_outlined),
-            selectedIcon: Icon(Icons.camera_alt_rounded),
+            icon: Icon(Icons.document_scanner_outlined),
+            selectedIcon: Icon(Icons.document_scanner_rounded),
             label: 'Deteksi',
           ),
         ],
