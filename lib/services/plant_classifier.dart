@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
@@ -14,7 +15,8 @@ class PlantClassification {
 /// YOLOv8 detector exported to ONNX with embedded NMS.
 /// Output rows are [x1, y1, x2, y2, confidence, classId].
 class PlantClassifier {
-  static const _labels = ['healthy', 'unhealthy'];
+  // Model classes: 0=healthy, 1=lettuce leaf (ignore), 2=unhealthy.
+  static const _labelMap = {0: 'healthy', 2: 'unhealthy'};
   static const _asset = 'assets/models/lettuce_detector.onnx';
   static const _size = 640;
 
@@ -36,7 +38,7 @@ class PlantClassifier {
 
     final resized = img.copyResize(decoded, width: _size, height: _size);
     // ONNX input is NCHW float32, RGB normalized to 0..1.
-    final input = List<double>.filled(1 * 3 * _size * _size, 0);
+    final input = Float32List(1 * 3 * _size * _size);
     final plane = _size * _size;
     for (var y = 0; y < _size; y++) {
       for (var x = 0; x < _size; x++) {
@@ -71,9 +73,7 @@ class PlantClassifier {
       for (var i = 0; i + 5 < rows.length; i += 6) {
         final confidence = rows[i + 4].clamp(0.0, 1.0);
         final classId = rows[i + 5].round();
-        if (classId >= 0 &&
-            classId < _labels.length &&
-            confidence > bestConfidence) {
+        if (_labelMap.containsKey(classId) && confidence > bestConfidence) {
           bestConfidence = confidence;
           bestClass = classId;
         }
@@ -85,7 +85,7 @@ class PlantClassifier {
         );
       }
       return PlantClassification(
-        label: _labels[bestClass],
+        label: _labelMap[bestClass]!,
         confidence: bestConfidence,
       );
     } finally {
