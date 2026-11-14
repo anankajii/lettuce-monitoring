@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/firebase_service.dart';
 import 'analysis_screen.dart';
 import 'dashboard_screen.dart';
 import 'detection_screen.dart';
@@ -15,9 +16,15 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
+  final _firebase = FirebaseService();
 
   late final List<Widget> _screens = [
-    const DashboardScreen(),
+    StreamBuilder(
+      stream: _firebase.watchLatestSensor(),
+      builder: (context, snapshot) {
+        return DashboardScreen(reading: snapshot.data);
+      },
+    ),
     const MonitoringScreen(),
     const HistoryScreen(),
     const AnalysisScreen(),
