@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/demo_data.dart';
 import '../services/firebase_service.dart';
 import 'analysis_screen.dart';
 import 'dashboard_screen.dart';
@@ -22,7 +23,12 @@ class _AppShellState extends State<AppShell> {
     StreamBuilder(
       stream: _firebase.watchLatestSensor(),
       builder: (context, snapshot) {
-        return DashboardScreen(reading: snapshot.data);
+        // ponytail: fallback ke DemoData jika Firebase error/kosong, remove when DB reliable
+        if (snapshot.hasError) {
+          debugPrint('Firebase error: ${snapshot.error}');
+        }
+        final reading = snapshot.data ?? DemoData.latest;
+        return DashboardScreen(reading: reading);
       },
     ),
     const MonitoringScreen(),
