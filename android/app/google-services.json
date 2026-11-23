@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "763062986012",
-    "project_id": "lettuce-monitoring-165fd",
-    "storage_bucket": "lettuce-monitoring-165fd.firebasestorage.app"
+    "project_number": "930698802027",
+    "project_id": "letuce-monitoring",
+    "storage_bucket": "letuce-monitoring.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:763062986012:android:5248c065b40045728f86d9",
+        "mobilesdk_app_id": "1:930698802027:android:32d9516829d1afacdd122e",
         "android_client_info": {
           "package_name": "com.hidroponik.lettucemonitor"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDyOoxU2qRGfb3ARKFoq0maj7BcUbaVb90"
+          "current_key": "AIzaSyCGHwtjWGmWbvhdKpwR8N1KrbQmPqs18GQ"
         }
       ],
       "services": {

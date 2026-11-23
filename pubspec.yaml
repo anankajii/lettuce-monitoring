@@ -28,3 +28,4 @@ flutter:
   assets:
     - assets/models/best.tflite
     - assets/models/lettuce_detector.onnx
+    - assets/models/lettuce_yolov8_v5.onnx

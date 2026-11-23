@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/demo_data.dart';
+import '../models/sensor_reading.dart';
 import '../services/firebase_service.dart';
 import 'analysis_screen.dart';
 import 'dashboard_screen.dart';
@@ -31,7 +32,19 @@ class _AppShellState extends State<AppShell> {
         return DashboardScreen(reading: reading);
       },
     ),
-    const MonitoringScreen(),
+    StreamBuilder<SensorReading?>(
+      stream: _firebase.watchLatestSensor(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          debugPrint('Firebase monitor error: ${snapshot.error}');
+        }
+        final reading = snapshot.data ?? DemoData.latest;
+        return MonitoringScreen(
+          reading: reading,
+          lastSynced: reading.timestamp,
+        );
+      },
+    ),
     const HistoryScreen(),
     const AnalysisScreen(),
     const DetectionScreen(),

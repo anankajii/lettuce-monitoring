@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -34,12 +35,12 @@ class DetectionScreen extends StatefulWidget {
 }
 
 class _DetectionScreenState extends State<DetectionScreen> {
-  final _picker     = ImagePicker();
+  final _picker = ImagePicker();
   final _classifier = PlantClassifier();
 
-  XFile?               _image;
+  XFile? _image;
   PlantClassification? _result;
-  bool                 _loading = false;
+  bool _loading = false;
 
   Future<void> _select(ImageSource source) async {
     try {
@@ -49,24 +50,36 @@ class _DetectionScreenState extends State<DetectionScreen> {
         maxWidth: 1600,
       );
       if (photo == null) return;
-      setState(() { _image = photo; _result = null; _loading = true; });
+      setState(() {
+        _image = photo;
+        _result = null;
+        _loading = true;
+      });
       final result = await _classifier.classify(File(photo.path));
       if (mounted) setState(() => _result = result);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Plant analysis failed: $e');
+      debugPrintStack(stackTrace: stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Analisis gagal: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Analisis gagal: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  void _reset() => setState(() { _image = null; _result = null; });
+  void _reset() => setState(() {
+    _image = null;
+    _result = null;
+  });
 
   @override
-  void dispose() { _classifier.dispose(); super.dispose(); }
+  void dispose() {
+    _classifier.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +91,14 @@ class _DetectionScreenState extends State<DetectionScreen> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Deteksi Tanaman',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
-            Text('Klasifikasi kesehatan daun selada',
-                style: TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+            Text(
+              'Deteksi Tanaman',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+            ),
+            Text(
+              'Klasifikasi kesehatan daun selada',
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            ),
           ],
         ),
       ),
@@ -115,9 +132,10 @@ class _DetectionScreenState extends State<DetectionScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2)),
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
                   ],
                 ),
                 child: _image == null
@@ -125,17 +143,27 @@ class _DetectionScreenState extends State<DetectionScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.add_a_photo_outlined,
-                                size: 52, color: Color(0xFF9CA3AF)),
+                            Icon(
+                              Icons.add_a_photo_outlined,
+                              size: 52,
+                              color: Color(0xFF9CA3AF),
+                            ),
                             SizedBox(height: 10),
-                            Text('Tambahkan foto tanaman',
-                                style: TextStyle(
-                                    color: Color(0xFF9CA3AF), fontSize: 14)),
+                            Text(
+                              'Tambahkan foto tanaman',
+                              style: TextStyle(
+                                color: Color(0xFF9CA3AF),
+                                fontSize: 14,
+                              ),
+                            ),
                           ],
                         ),
                       )
-                    : Image.file(File(_image!.path),
-                        fit: BoxFit.cover, width: double.infinity),
+                    : Image.file(
+                        File(_image!.path),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                      ),
               ),
               if (_image != null)
                 Positioned(
@@ -146,9 +174,14 @@ class _DetectionScreenState extends State<DetectionScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: const BoxDecoration(
-                          color: Colors.black54, shape: BoxShape.circle),
-                      child: const Icon(Icons.close,
-                          color: Colors.white, size: 16),
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                     ),
                   ),
                 ),
@@ -161,8 +194,9 @@ class _DetectionScreenState extends State<DetectionScreen> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed:
-                      _loading ? null : () => _select(ImageSource.gallery),
+                  onPressed: _loading
+                      ? null
+                      : () => _select(ImageSource.gallery),
                   icon: const Icon(Icons.photo_library_outlined),
                   label: const Text('Galeri'),
                 ),
@@ -170,8 +204,9 @@ class _DetectionScreenState extends State<DetectionScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed:
-                      _loading ? null : () => _select(ImageSource.camera),
+                  onPressed: _loading
+                      ? null
+                      : () => _select(ImageSource.camera),
                   icon: const Icon(Icons.camera_alt_outlined),
                   label: const Text('Kamera'),
                 ),
@@ -226,9 +261,10 @@ class _Esp32Panel extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2)),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -250,11 +286,14 @@ class _Esp32Panel extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('ESP32 Hydroponics',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: cs.onSurface)),
+                    Text(
+                      'ESP32 Hydroponics',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
+                    ),
                     Row(
                       children: [
                         Container(
@@ -279,9 +318,13 @@ class _Esp32Panel extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Text('Terakhir: ${_fmtTime(lastSeen)}',
-                            style: const TextStyle(
-                                fontSize: 11, color: Color(0xFF9CA3AF))),
+                        Text(
+                          'Terakhir: ${_fmtTime(lastSeen)}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -293,7 +336,10 @@ class _Esp32Panel extends StatelessWidget {
                   icon: const Icon(Icons.camera_alt_outlined, size: 16),
                   label: const Text('Minta Foto ESP32'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -381,13 +427,18 @@ class _SensorMini extends StatelessWidget {
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(height: 6),
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF111827))),
-          Text('$label $unit',
-              style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF))),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF111827),
+            ),
+          ),
+          Text(
+            '$label $unit',
+            style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
+          ),
         ],
       ),
     );
@@ -403,8 +454,7 @@ class _ResultCard extends StatelessWidget {
   final bool loading;
 
   static const _labelInfo = <String, String>{
-    'healthy':
-        'Daun dalam kondisi sehat. Warna dan pertumbuhan tampak normal.',
+    'healthy': 'Daun dalam kondisi sehat. Warna dan pertumbuhan tampak normal.',
     'unhealthy':
         'Terdeteksi indikasi masalah pada daun. Periksa nutrisi, pH, atau tanda penyakit.',
   };
@@ -416,8 +466,9 @@ class _ResultCard extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: const Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -440,19 +491,21 @@ class _ResultCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2)),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Hasil Klasifikasi',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              'Hasil Klasifikasi',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 14),
             _row('Status tanaman', 'Belum dianalisis'),
             _row('Tingkat keyakinan', '—'),
@@ -468,14 +521,19 @@ class _ResultCard extends StatelessWidget {
 
     // Hasil valid
     final isHealthy = result!.label == 'healthy';
-    final color     = isHealthy ? const Color(0xFF16845B) : const Color(0xFFDC2626);
-    final bgColor   = isHealthy ? const Color(0xFFE8F5EF) : const Color(0xFFFEF2F2);
-    final icon      = isHealthy ? Icons.check_circle_rounded : Icons.warning_rounded;
+    final color = isHealthy ? const Color(0xFF16845B) : const Color(0xFFDC2626);
+    final bgColor = isHealthy
+        ? const Color(0xFFE8F5EF)
+        : const Color(0xFFFEF2F2);
+    final icon = isHealthy ? Icons.check_circle_rounded : Icons.warning_rounded;
     final labelText = isHealthy ? 'Sehat' : 'Tidak Sehat';
-    final confPct   = result!.confidence * 100;
-    final confCat   = confPct >= 85 ? 'Tinggi' : confPct >= 65 ? 'Sedang' : 'Rendah';
-    final info      = _labelInfo[result!.label]
-        ?? 'Label: ${result!.label}.';
+    final confPct = result!.confidence * 100;
+    final confCat = confPct >= 85
+        ? 'Tinggi'
+        : confPct >= 65
+        ? 'Sedang'
+        : 'Rendah';
+    final info = _labelInfo[result!.label] ?? 'Label: ${result!.label}.';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -484,19 +542,21 @@ class _ResultCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2)),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Hasil Klasifikasi',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            'Hasil Klasifikasi',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 14),
 
           // Banner status
@@ -515,16 +575,21 @@ class _ResultCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(labelText,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: color)),
                     Text(
-                        'Keyakinan: ${confPct.toStringAsFixed(1)}% ($confCat)',
-                        style: TextStyle(
-                            color: color.withValues(alpha: 0.8),
-                            fontSize: 13)),
+                      labelText,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                      ),
+                    ),
+                    Text(
+                      'Keyakinan: ${confPct.toStringAsFixed(1)}% ($confCat)',
+                      style: TextStyle(
+                        color: color.withValues(alpha: 0.8),
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -552,9 +617,10 @@ class _ResultCard extends StatelessWidget {
               color: const Color(0xFFF9FAFB),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(info,
-                style: const TextStyle(
-                    fontSize: 13, color: Color(0xFF374151))),
+            child: Text(
+              info,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF374151)),
+            ),
           ),
           const Divider(height: 24),
           const Text(
@@ -567,13 +633,12 @@ class _ResultCard extends StatelessWidget {
   }
 
   Widget _row(String label, String value) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          children: [
-            Expanded(child: Text(label)),
-            Text(value,
-                style: const TextStyle(fontWeight: FontWeight.w700)),
-          ],
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Row(
+      children: [
+        Expanded(child: Text(label)),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+      ],
+    ),
+  );
 }
