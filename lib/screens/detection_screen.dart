@@ -48,6 +48,14 @@ class _DetectionScreenState extends State<DetectionScreen> {
   String? _cfError;
 
   Future<void> _triggerAndFetch() async {
+    // Check if token is set
+    final token = await _cf.getAppToken();
+    if (token == null || token.isEmpty) {
+      if (!mounted) return;
+      _showTokenDialog();
+      return;
+    }
+
     setState(() {
       _loading = true;
       _cfError = null;
@@ -94,6 +102,46 @@ class _DetectionScreenState extends State<DetectionScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _showTokenDialog() {
+    final tokenCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Set Cloudflare Token'),
+        content: TextField(
+          controller: tokenCtrl,
+          decoration: const InputDecoration(
+            hintText: 'Paste APP_TOKEN dari Cloudflare Console',
+            border: OutlineInputBorder(),
+          ),
+          obscureText: true,
+          maxLines: 2,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final token = tokenCtrl.text.trim();
+              if (token.isNotEmpty) {
+                await _cf.setAppToken(token);
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Token saved')),
+                  );
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _select(ImageSource source) async {
