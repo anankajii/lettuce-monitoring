@@ -57,7 +57,9 @@ class _DetectionScreenState extends State<DetectionScreen> {
     });
     try {
       // 1. Trigger ESP32 untuk capture (gunakan hardcoded token)
+      print('[DEBUG] Trigger token: $_appToken');
       await _cf.triggerESP32Photo('esp32_main', token: _appToken);
+      print('[DEBUG] Trigger sent OK');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Trigger sent to ESP32...')),
       );
@@ -66,7 +68,9 @@ class _DetectionScreenState extends State<DetectionScreen> {
       await Future.delayed(const Duration(seconds: 20));
       
       // 3. Fetch foto terbaru dari Cloudflare
+      print('[DEBUG] Fetching photos...');
       final detection = await _analysis.analyzeLatestPhoto(token: _appToken);
+      print('[DEBUG] Detection result: $detection');
       if (detection != null && mounted) {
         setState(() {
           _result = PlantClassification(
@@ -87,7 +91,9 @@ class _DetectionScreenState extends State<DetectionScreen> {
           );
         }
       }
-    } catch (e) {
+    } catch (e, st) {
+      print('[DEBUG] Error: $e');
+      print('[DEBUG] StackTrace: $st');
       if (mounted) {
         setState(() => _cfError = e.toString());
         ScaffoldMessenger.of(context).showSnackBar(
