@@ -3,10 +3,20 @@ import 'package:flutter/material.dart';
 
 import 'firebase_options.dart';
 import 'screens/app_shell.dart';
+import 'services/cloudflare_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  // Setup Cloudflare token jika belum ada
+  final cf = CloudflareService();
+  final existingToken = await cf.getAppToken();
+  if (existingToken == null) {
+    // Token akan diminta pertama kali buka app
+    await cf.setAppToken(''); // placeholder, akan diminta di settings
+  }
+  
   runApp(const HydroponicApp());
 }
 

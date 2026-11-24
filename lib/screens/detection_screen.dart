@@ -47,12 +47,22 @@ class _DetectionScreenState extends State<DetectionScreen> {
   bool _loading = false;
   String? _cfError;
 
-  Future<void> _fetchLatestFromCloudflare() async {
+  Future<void> _triggerAndFetch() async {
     setState(() {
       _loading = true;
       _cfError = null;
     });
     try {
+      // 1. Trigger ESP32 untuk capture
+      await _cf.triggerESP32Photo('esp32_main');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Trigger sent to ESP32...')),
+      );
+      
+      // 2. Tunggu ESP32 capture + upload (10-15 detik)
+      await Future.delayed(const Duration(seconds: 12));
+      
+      // 3. Fetch foto terbaru dari Cloudflare
       final detection = await _analysis.analyzeLatestPhoto();
       if (detection != null && mounted) {
         setState(() {
@@ -65,8 +75,14 @@ class _DetectionScreenState extends State<DetectionScreen> {
           }
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Foto dianalisis: ${detection.label}')),
+          SnackBar(content: Text('Analyzed: ${detection.label}')),
         );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No new photo from ESP32')),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -255,11 +271,11 @@ class _DetectionScreenState extends State<DetectionScreen> {
           
           // ── Tombol Cloudflare ─────────────────────────────────────────
           FilledButton.icon(
-            onPressed: _loading ? null : _fetchLatestFromCloudflare,
+            onPressed: _loading ? null : _triggerAndFetch,
             icon: _loading 
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)))
-                : const Icon(Icons.cloud_download_outlined),
-            label: const Text('Ambil dari Cloudflare'),
+                : const Icon(Icons.camera_flash_outlined),
+            label: const Text('Trigger & Capture'),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF0891B2),
             ),
