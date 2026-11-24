@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/sensor_reading.dart';
+import '../services/cloudflare_service.dart';
+import '../services/photo_analysis_service.dart';
 import '../services/plant_classifier.dart';
 
 /// Layar Deteksi Tanaman — kamera/galeri → inferensi TFLite → hasil.
@@ -37,10 +39,46 @@ class DetectionScreen extends StatefulWidget {
 class _DetectionScreenState extends State<DetectionScreen> {
   final _picker = ImagePicker();
   final _classifier = PlantClassifier();
+  final _cf = CloudflareService();
+  final _analysis = PhotoAnalysisService();
 
   XFile? _image;
   PlantClassification? _result;
   bool _loading = false;
+  String? _cfError;
+
+  Future<void> _fetchLatestFromCloudflare() async {
+    setState(() {
+      _loading = true;
+      _cfError = null;
+    });
+    try {
+      final detection = await _analysis.analyzeLatestPhoto();
+      if (detection != null && mounted) {
+        setState(() {
+          _result = PlantClassification(
+            label: detection.label,
+            confidence: detection.confidence,
+          );
+          if (detection.imagePath != null) {
+            _image = XFile(detection.imagePath!);
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Foto dianalisis: ${detection.label}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _cfError = e.toString());
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   Future<void> _select(ImageSource source) async {
     try {
@@ -212,6 +250,19 @@ class _DetectionScreenState extends State<DetectionScreen> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          
+          // ── Tombol Cloudflare ─────────────────────────────────────────
+          FilledButton.icon(
+            onPressed: _loading ? null : _fetchLatestFromCloudflare,
+            icon: _loading 
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)))
+                : const Icon(Icons.cloud_download_outlined),
+            label: const Text('Ambil dari Cloudflare'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF0891B2),
+            ),
           ),
           const SizedBox(height: 20),
 
