@@ -80,6 +80,21 @@ class CloudflareService {
     return file;
   }
 
+  /// POST /trigger/{deviceId} — trigger ESP32 untuk capture
+  Future<void> triggerESP32Photo(String deviceId) async {
+    final token = await getAppToken();
+    if (token == null) throw Exception('Cloudflare token not set');
+
+    final res = await http.post(
+      Uri.parse('$_baseUrl/trigger/$deviceId'),
+      headers: {'Authorization': 'Bearer $token'},
+    ).timeout(const Duration(seconds: 10));
+
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('Trigger failed: ${res.statusCode}');
+    }
+  }
+
   static dynamic _parseJson(String body) {
     try {
       return _simpleJsonParse(body);

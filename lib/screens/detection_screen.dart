@@ -274,7 +274,7 @@ class _DetectionScreenState extends State<DetectionScreen> {
             onPressed: _loading ? null : _triggerAndFetch,
             icon: _loading 
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)))
-                : const Icon(Icons.camera_flash_outlined),
+                : const Icon(Icons.flash_on),
             label: const Text('Trigger & Capture'),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF0891B2),
