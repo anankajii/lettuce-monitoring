@@ -16,13 +16,17 @@ Status yang diperbolehkan:
 
 | ID | Task | Prioritas | Penanggung jawab | Branch | Status | PR/Issue | Catatan |
 |---|---|---|---|---|---|---|---|
-| MOB-001 | Inisialisasi Firebase di `main.dart` | P0 | - | - | ⬜ Belum | - | - |
-| MOB-002 | Perbarui model `SensorReading` | P0 | - | - | ⬜ Belum | - | - |
-| MOB-003 | Buat `SensorRepository` | P0 | - | - | ⬜ Belum | - | - |
-| MOB-004 | Buat Firebase realtime service | P0 | - | - | ⬜ Belum | - | - |
-| MOB-005 | Migrasi dashboard dari HTTP ke Firebase | P0 | - | - | ⬜ Belum | - | - |
-| MOB-006 | Test model dan repository Firebase | P0 | - | - | ⬜ Belum | - | - |
-| MOB-007 | Loading, empty, offline, dan error state | P0 | - | - | ⬜ Belum | - | - |
+|| MOB-001 | Inisialisasi Firebase di `main.dart` | P0 | - | - | ✅ Selesai | - | - |
+|| MOB-002 | Perbarui model `SensorReading` | P0 | - | - | ⬜ Belum | - | - |
+|| MOB-003 | Buat `SensorRepository` | P0 | - | - | ⬜ Belum | - | - |
+|| MOB-004 | Buat Firebase realtime service | P0 | - | - | ✅ Selesai | - | FirebaseService.watchLatestSensor() |
+|| MOB-005 | Migrasi dashboard dari HTTP ke Firebase | P0 | - | - | ✅ Selesai | - | AppShell StreamBuilder aktif |
+|| MOB-006 | Test model dan repository Firebase | P0 | - | - | ⬜ Belum | - | - |
+|| MOB-007 | Loading, empty, offline, dan error state | P0 | - | - | ⬜ Belum | - | - |
+|| MOB-030 | Setup CloudflareService & download foto | P1 | - | - | ✅ Selesai | - | GET /list, GET /image/{key} |
+|| MOB-031 | Photo analysis service (CF → classify → Firebase) | P1 | - | - | ✅ Selesai | - | PhotoAnalysisService.analyzeFromCloudflare() |
+|| MOB-032 | Detection screen: list & download dari Cloudflare | P2 | - | - | ⬜ Belum | - | Integrate CloudflareService |
+|| MOB-033 | Auto-sync latest photo dari ESP32-CAM | P2 | - | - | ⬜ Belum | - | Background task / periodic |
 | MOB-008 | Design system dan theme global | P1 | - | - | ⬜ Belum | - | - |
 | MOB-009 | Dashboard final responsif | P1 | - | - | ⬜ Belum | - | - |
 | MOB-010 | Navigasi aplikasi | P1 | - | - | ⬜ Belum | - | - |
