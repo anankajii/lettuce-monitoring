@@ -73,9 +73,10 @@ class CloudflareService {
       throw Exception('Failed to download photo: ${res.statusCode}');
     }
 
-    // ponytail: simpan ke app cache dir, bukan documents (smaller scope)
+    // ponytail: simpan ke app cache dir; escape key untuk menghindari path traversal
     final dir = Directory.systemTemp;
-    final file = File('${dir.path}/cf_$key');
+    final safeName = key.replaceAll('/', '_');
+    final file = File('${dir.path}/cf_$safeName');
     await file.writeAsBytes(res.bodyBytes);
     return file;
   }
