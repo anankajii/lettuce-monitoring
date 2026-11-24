@@ -20,19 +20,29 @@ class PhotoAnalysisService {
     // 1. Download foto
     final file = await _cf.downloadPhoto(photoKey, token: token);
 
-    // 2. Classify
-    final classification = await _classifier.classify(file);
+    // 2. Validate file size
+    final fileSize = await file.length();
+    if (fileSize == 0) {
+      throw Exception('Downloaded file is empty');
+    }
 
-    // 3. Simpan metadata ke Firebase
-    final detection = PlantDetection(
-      label: classification.label,
-      confidence: classification.confidence,
-      createdAt: DateTime.now(),
-      imagePath: file.path,
-    );
-    await _saveDetectionToFirebase(detection, photoKey);
+    // 3. Classify
+    try {
+      final classification = await _classifier.classify(file);
 
-    return detection;
+      // 4. Simpan metadata ke Firebase
+      final detection = PlantDetection(
+        label: classification.label,
+        confidence: classification.confidence,
+        createdAt: DateTime.now(),
+        imagePath: file.path,
+      );
+      await _saveDetectionToFirebase(detection, photoKey);
+
+      return detection;
+    } catch (e) {
+      throw Exception('Image classification failed: $e');
+    }
   }
 
   /// Get latest foto & auto-analyze
