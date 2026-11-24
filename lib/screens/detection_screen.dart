@@ -62,8 +62,8 @@ class _DetectionScreenState extends State<DetectionScreen> {
         const SnackBar(content: Text('Trigger sent to ESP32...')),
       );
       
-      // 2. Tunggu ESP32 capture + upload (10-15 detik)
-      await Future.delayed(const Duration(seconds: 12));
+      // 2. Tunggu ESP32 capture + upload (20 detik untuk trigger response)
+      await Future.delayed(const Duration(seconds: 20));
       
       // 3. Fetch foto terbaru dari Cloudflare
       final detection = await _analysis.analyzeLatestPhoto(token: _appToken);
