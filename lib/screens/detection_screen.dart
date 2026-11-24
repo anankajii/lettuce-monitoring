@@ -46,23 +46,18 @@ class _DetectionScreenState extends State<DetectionScreen> {
   PlantClassification? _result;
   bool _loading = false;
   String? _cfError;
+  
+  // ponytail: hardcoded token for testing; move to env/secure storage for prod
+  static const _appToken = 'token';
 
   Future<void> _triggerAndFetch() async {
-    // Check if token is set
-    final token = await _cf.getAppToken();
-    if (token == null || token.isEmpty) {
-      if (!mounted) return;
-      _showTokenDialog();
-      return;
-    }
-
     setState(() {
       _loading = true;
       _cfError = null;
     });
     try {
-      // 1. Trigger ESP32 untuk capture
-      await _cf.triggerESP32Photo('esp32_main');
+      // 1. Trigger ESP32 untuk capture (gunakan hardcoded token)
+      await _cf.triggerESP32Photo('esp32_main', token: _appToken);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Trigger sent to ESP32...')),
       );
@@ -102,46 +97,6 @@ class _DetectionScreenState extends State<DetectionScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-  }
-
-  void _showTokenDialog() {
-    final tokenCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Set Cloudflare Token'),
-        content: TextField(
-          controller: tokenCtrl,
-          decoration: const InputDecoration(
-            hintText: 'Paste APP_TOKEN dari Cloudflare Console',
-            border: OutlineInputBorder(),
-          ),
-          obscureText: true,
-          maxLines: 2,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final token = tokenCtrl.text.trim();
-              if (token.isNotEmpty) {
-                await _cf.setAppToken(token);
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Token saved')),
-                  );
-                }
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _select(ImageSource source) async {

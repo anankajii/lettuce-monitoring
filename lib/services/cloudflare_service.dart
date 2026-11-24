@@ -81,13 +81,13 @@ class CloudflareService {
   }
 
   /// POST /trigger/{deviceId} — trigger ESP32 untuk capture
-  Future<void> triggerESP32Photo(String deviceId) async {
-    final token = await getAppToken();
-    if (token == null) throw Exception('Cloudflare token not set');
+  Future<void> triggerESP32Photo(String deviceId, {String? token}) async {
+    final authToken = token ?? await getAppToken();
+    if (authToken == null) throw Exception('Cloudflare token not set');
 
     final res = await http.post(
       Uri.parse('$_baseUrl/trigger/$deviceId'),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {'Authorization': 'Bearer $authToken'},
     ).timeout(const Duration(seconds: 10));
 
     if (res.statusCode != 200 && res.statusCode != 201) {
