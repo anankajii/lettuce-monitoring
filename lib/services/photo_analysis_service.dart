@@ -16,9 +16,9 @@ class PhotoAnalysisService {
   final _classifier = PlantClassifier();
 
   /// Download foto dari Cloudflare → classify → simpan ke Firebase
-  Future<PlantDetection> analyzeFromCloudflare(String photoKey) async {
+  Future<PlantDetection> analyzeFromCloudflare(String photoKey, {String? token}) async {
     // 1. Download foto
-    final file = await _cf.downloadPhoto(photoKey);
+    final file = await _cf.downloadPhoto(photoKey, token: token);
 
     // 2. Classify
     final classification = await _classifier.classify(file);
@@ -36,14 +36,14 @@ class PhotoAnalysisService {
   }
 
   /// Get latest foto & auto-analyze
-  Future<PlantDetection?> analyzeLatestPhoto() async {
+  Future<PlantDetection?> analyzeLatestPhoto({String? token}) async {
     try {
-      final photos = await _cf.listPhotos();
+      final photos = await _cf.listPhotos(token: token);
       if (photos.isEmpty) return null;
 
       // ponytail: ambil foto terbaru (assume sorted by uploadedAt desc)
       final latest = photos.first;
-      return analyzeFromCloudflare(latest.key);
+      return analyzeFromCloudflare(latest.key, token: token);
     } catch (e) {
       rethrow;
     }

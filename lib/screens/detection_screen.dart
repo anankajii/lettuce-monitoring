@@ -48,7 +48,7 @@ class _DetectionScreenState extends State<DetectionScreen> {
   String? _cfError;
   
   // ponytail: hardcoded token for testing; move to env/secure storage for prod
-  static const _appToken = 'token';
+  static const _appToken = 'token-ambil-foto';
 
   Future<void> _triggerAndFetch() async {
     setState(() {
@@ -66,7 +66,7 @@ class _DetectionScreenState extends State<DetectionScreen> {
       await Future.delayed(const Duration(seconds: 12));
       
       // 3. Fetch foto terbaru dari Cloudflare
-      final detection = await _analysis.analyzeLatestPhoto();
+      final detection = await _analysis.analyzeLatestPhoto(token: _appToken);
       if (detection != null && mounted) {
         setState(() {
           _result = PlantClassification(

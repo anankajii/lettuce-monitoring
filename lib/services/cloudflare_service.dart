@@ -38,13 +38,13 @@ class CloudflareService {
   }
 
   /// GET /list — ambil daftar foto terbaru
-  Future<List<CloudflarePhoto>> listPhotos() async {
-    final token = await getAppToken();
-    if (token == null) throw Exception('Cloudflare token not set');
+  Future<List<CloudflarePhoto>> listPhotos({String? token}) async {
+    final authToken = token ?? await getAppToken();
+    if (authToken == null) throw Exception('Cloudflare token not set');
 
     final res = await http.get(
       Uri.parse('$_baseUrl/list'),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {'Authorization': 'Bearer $authToken'},
     ).timeout(const Duration(seconds: 10));
 
     if (res.statusCode != 200) {
@@ -60,13 +60,13 @@ class CloudflareService {
   }
 
   /// GET /image/{key} — download foto & simpan ke file
-  Future<File> downloadPhoto(String key) async {
-    final token = await getAppToken();
-    if (token == null) throw Exception('Cloudflare token not set');
+  Future<File> downloadPhoto(String key, {String? token}) async {
+    final authToken = token ?? await getAppToken();
+    if (authToken == null) throw Exception('Cloudflare token not set');
 
     final res = await http.get(
       Uri.parse('$_baseUrl/image/$key'),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {'Authorization': 'Bearer $authToken'},
     ).timeout(const Duration(seconds: 30));
 
     if (res.statusCode != 200) {
