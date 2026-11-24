@@ -64,11 +64,13 @@ class CloudflareService {
     final authToken = token ?? await getAppToken();
     if (authToken == null) throw Exception('Cloudflare token not set');
 
+    print('[DEBUG CloudflareService] Downloading: $key');
     final res = await http.get(
       Uri.parse('$_baseUrl/image/$key'),
       headers: {'Authorization': 'Bearer $authToken'},
     ).timeout(const Duration(seconds: 30));
 
+    print('[DEBUG CloudflareService] Download status: ${res.statusCode}, size: ${res.bodyBytes.length}');
     if (res.statusCode != 200) {
       throw Exception('Failed to download photo: ${res.statusCode}');
     }
@@ -78,6 +80,7 @@ class CloudflareService {
     final safeName = key.replaceAll('/', '_');
     final file = File('${dir.path}/cf_$safeName');
     await file.writeAsBytes(res.bodyBytes);
+    print('[DEBUG CloudflareService] Saved to: ${file.path}');
     return file;
   }
 
