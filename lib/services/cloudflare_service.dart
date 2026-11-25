@@ -66,7 +66,7 @@ class CloudflareService {
 
     print('[DEBUG CloudflareService] Downloading: $key');
     final res = await http.get(
-      Uri.parse('$_baseUrl/image/$key'),
+      Uri.parse('$_baseUrl/image/${Uri.encodeComponent(key)}'),
       headers: {'Authorization': 'Bearer $authToken'},
     ).timeout(const Duration(seconds: 30));
 

@@ -52,7 +52,7 @@ class PhotoAnalysisService {
       if (photos.isEmpty) return null;
 
       // ponytail: ambil foto terbaru (assume sorted by uploadedAt desc)
-      final latest = photos.first;
+      final latest = photos.last;
       return analyzeFromCloudflare(latest.key, token: token);
     } catch (e) {
       rethrow;

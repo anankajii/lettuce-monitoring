@@ -65,7 +65,7 @@ class _DetectionScreenState extends State<DetectionScreen> {
       );
       
       // 2. Tunggu ESP32 capture + upload (20 detik untuk trigger response)
-      await Future.delayed(const Duration(seconds: 20));
+      await Future.delayed(const Duration(seconds: 15));
       
       // 3. Fetch foto terbaru dari Cloudflare
       print('[DEBUG] Fetching photos...');
