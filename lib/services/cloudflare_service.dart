@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -65,20 +66,31 @@ class CloudflareService {
     if (authToken == null) throw Exception('Cloudflare token not set');
 
     print('[DEBUG CloudflareService] Downloading: $key');
+    // Encode each path segment. Encoding whole key turns `/` into `%2F`,
+    // which makes Cloudflare Worker route miss the image key.
+    final encodedKey = key.split('/').map(Uri.encodeComponent).join('/');
     final res = await http.get(
-      Uri.parse('$_baseUrl/image/${Uri.encodeComponent(key)}'),
+      Uri.parse('$_baseUrl/image/$encodedKey'),
       headers: {'Authorization': 'Bearer $authToken'},
     ).timeout(const Duration(seconds: 30));
 
-    print('[DEBUG CloudflareService] Download status: ${res.statusCode}, size: ${res.bodyBytes.length}');
-    if (res.statusCode != 200) {
-      throw Exception('Failed to download photo: ${res.statusCode}');
-    }
+    final bytes = res.bodyBytes;
+        print('[DEBUG CloudflareService] Download status: ${res.statusCode}, size: ${bytes.length}, content-type: ${res.headers['content-type']}');
+        if (res.statusCode != 200) {
+          throw Exception('Failed to download photo: ${res.statusCode}');
+        }
+        if (!_looksLikeImage(bytes)) {
+          final preview = utf8.decode(bytes, allowMalformed: true).trim();
+          if (_isJsonError(preview)) {
+            throw Exception('Cloudflare error response: $preview');
+          }
+          throw Exception('Cloudflare returned invalid image (${bytes.length} bytes): $preview');
+        }
 
-    // ponytail: simpan ke app cache dir; escape key untuk menghindari path traversal
-    final dir = Directory.systemTemp;
-    final safeName = key.replaceAll('/', '_');
-    final file = File('${dir.path}/cf_$safeName');
+    // Keep downloaded images in app cache, not shared system temp.
+    final dir = await Directory.systemTemp.createTemp('lettuce_cf_');
+    final safeName = key.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    final file = File('${dir.path}/$safeName');
     await file.writeAsBytes(res.bodyBytes);
     print('[DEBUG CloudflareService] Saved to: ${file.path}');
     return file;
@@ -99,52 +111,27 @@ class CloudflareService {
     }
   }
 
-  static dynamic _parseJson(String body) {
+  static bool _looksLikeImage(List<int> bytes) {
+      if (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return true;
+      if (bytes.length >= 8 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) return true;
+      if (bytes.length >= 6 && String.fromCharCodes(bytes.take(6)) == 'GIF89a') return true;
+      if (bytes.length >= 6 && String.fromCharCodes(bytes.take(6)) == 'GIF87a') return true;
+      return false;
+    }
+
+    static bool _isJsonError(String preview) {
+      final lowered = preview.toLowerCase();
+      return lowered.contains('object getresult') ||
+          lowered.contains('error') ||
+          lowered.contains('not found') ||
+          lowered.contains('invalid');
+    }
+
+    static dynamic _parseJson(String body) {
     try {
-      return _simpleJsonParse(body);
-    } catch (_) {
-      return {};
+      return jsonDecode(body);
+    } on FormatException {
+      return <String, dynamic>{};
     }
-  }
-
-  static dynamic _simpleJsonParse(String json) {
-    // ponytail: dart:convert tidak diimport, parse manual untuk sederhana
-    // hanya untuk { "photos": [...], "success": true }
-    if (json.contains('"success":true')) {
-      final start = json.indexOf('"photos":[');
-      if (start != -1) {
-        final end = json.indexOf(']', start);
-        if (end != -1) {
-          final photosStr = json.substring(start + 10, end + 1);
-          return {'photos': _parsePhotoArray(photosStr)};
-        }
-      }
-    }
-    return {};
-  }
-
-  static List<Map<String, dynamic>> _parsePhotoArray(String arr) {
-    final photos = <Map<String, dynamic>>[];
-    var i = 1;
-    while (i < arr.length - 1) {
-      final objStart = arr.indexOf('{', i);
-      if (objStart == -1) break;
-      final objEnd = arr.indexOf('}', objStart);
-      if (objEnd == -1) break;
-
-      final obj = arr.substring(objStart, objEnd + 1);
-      final keyMatch = RegExp(r'"key":"([^"]+)"').firstMatch(obj);
-      final timeMatch = RegExp(r'"uploadedAt":"([^"]+)"').firstMatch(obj);
-
-      if (keyMatch != null && timeMatch != null) {
-        photos.add({
-          'key': keyMatch.group(1),
-          'uploadedAt': timeMatch.group(1),
-        });
-      }
-
-      i = objEnd + 1;
-    }
-    return photos;
   }
 }

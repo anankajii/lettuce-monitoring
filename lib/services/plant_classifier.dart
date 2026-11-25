@@ -19,7 +19,9 @@ class PlantClassifier {
   // v5 classes: 0=healthy, 1=unhealthy.
   static const _labelMap = {0: 'healthy', 1: 'unhealthy'};
   static const _asset = 'assets/models/lettuce_yolov8_v5.onnx';
+  // Reversible: restore 0.35 to use old behavior.
   static const _confidenceThreshold = 0.35;
+  static const _unknownThreshold = 0.40;
   static const _size = 640;
 
   OrtSession? _session;
@@ -108,7 +110,9 @@ class PlantClassifier {
         );
       }
       return PlantClassification(
-        label: _labelMap[bestClass]!,
+        label: bestConfidence < _unknownThreshold
+            ? 'Objek tidak dikenali'
+            : _labelMap[bestClass]!,
         confidence: bestConfidence,
       );
     } finally {
