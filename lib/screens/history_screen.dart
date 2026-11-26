@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/sensor_reading.dart';
 import '../core/config/sensor_thresholds.dart';
 import '../core/domain/sensor_evaluator.dart';
+import '../services/firebase_service.dart';
 
 /// Layar Riwayat — tab Sensor (timeline) + tab Tanaman (log deteksi).
 class HistoryScreen extends StatefulWidget {
@@ -177,74 +178,50 @@ class _SensorHistoryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Simulasi data history (nanti dari Firebase)
-    final logs = [
-      _LogData(
-        timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-        ph: 6.2,
-        tds: 450,
-        waterTemp: 24.5,
-        airTemp: 28.0,
-        humidity: 65.0,
-      ),
-      _LogData(
-        timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-        ph: 6.3,
-        tds: 460,
-        waterTemp: 24.3,
-        airTemp: 27.8,
-        humidity: 64.5,
-      ),
-      _LogData(
-        timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-        ph: 6.1,
-        tds: 440,
-        waterTemp: 24.8,
-        airTemp: 28.2,
-        humidity: 66.0,
-      ),
-    ];
+    return StreamBuilder<List<SensorReading>>(
+      stream: FirebaseService().watchSensorHistory(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return _EmptyState(
+            icon: Icons.error_outline,
+            message: 'Gagal mengambil riwayat Firebase',
+            shadowColor: Theme.of(context).colorScheme.error,
+          );
+        }
 
-    final filtered = logs
-        .where(
-          (l) =>
-              l.timestamp.isAfter(startDate) && l.timestamp.isBefore(endDate),
-        )
-        .toList();
+        final seenHours = <String>{};
+        final filtered = (snapshot.data ?? []).where((reading) {
+          final ts = reading.timestamp;
+          if (!ts.isAfter(startDate) || !ts.isBefore(endDate)) return false;
+          final hourKey = '${ts.year}-${ts.month}-${ts.day}-${ts.hour}';
+          return seenHours.add(hourKey);
+        }).toList();
 
-    if (filtered.isEmpty) {
-      return _EmptyState(
-        icon: Icons.sensors_off_rounded,
-        message: 'Belum ada data sensor pada rentang ini',
-        shadowColor: Theme.of(context).colorScheme.primary,
-      );
-    }
+        if (filtered.isEmpty) {
+          return _EmptyState(
+            icon: Icons.sensors_off_rounded,
+            message: 'Belum ada data sensor pada rentang ini',
+            shadowColor: Theme.of(context).colorScheme.primary,
+          );
+        }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: filtered.length,
-      itemBuilder: (context, i) => _LogCard(log: filtered[i]),
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: filtered.length,
+          itemBuilder: (context, i) => _LogCard(reading: filtered[i]),
+        );
+      },
     );
   }
 }
 
-class _LogData {
-  final DateTime timestamp;
-  final double? ph, tds, waterTemp, airTemp, humidity;
-  _LogData({
-    required this.timestamp,
-    required this.ph,
-    required this.tds,
-    required this.waterTemp,
-    required this.airTemp,
-    required this.humidity,
-  });
-}
-
 class _LogCard extends StatelessWidget {
-  const _LogCard({required this.log});
+  const _LogCard({required this.reading});
 
-  final _LogData log;
+  final SensorReading reading;
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +247,7 @@ class _LogCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                _fmtDate(log.timestamp),
+                _fmtDate(reading.timestamp),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -279,7 +256,7 @@ class _LogCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                _fmtTime(log.timestamp),
+                _fmtTime(reading.timestamp),
                 style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
               ),
             ],
@@ -289,33 +266,21 @@ class _LogCard extends StatelessWidget {
             children: [
               _SensorMini(
                 label: 'pH',
-                value: '${log.ph?.toStringAsFixed(1) ?? '—'}',
+                value: '${reading.ph?.toStringAsFixed(1) ?? '—'}',
                 unit: 'pH',
                 color: const Color(0xFF7C3AED),
               ),
               _SensorMini(
                 label: 'TDS',
-                value: '${log.tds?.toStringAsFixed(0) ?? '—'}',
+                value: '${reading.tds?.toStringAsFixed(0) ?? '—'}',
                 unit: 'ppm',
                 color: const Color(0xFF0891B2),
               ),
               _SensorMini(
-                label: 'Air',
-                value: '${log.waterTemp?.toStringAsFixed(1) ?? '—'}',
+                label: 'Suhu Air',
+                value: '${reading.waterTemperature?.toStringAsFixed(1) ?? '—'}',
                 unit: '°C',
                 color: const Color(0xFF2878C8),
-              ),
-              _SensorMini(
-                label: 'Udara',
-                value: '${log.airTemp?.toStringAsFixed(1) ?? '—'}',
-                unit: '°C',
-                color: const Color(0xFFE7683F),
-              ),
-              _SensorMini(
-                label: 'Humid',
-                value: '${log.humidity?.toStringAsFixed(1) ?? '—'}',
-                unit: '%',
-                color: const Color(0xFF059669),
               ),
             ],
           ),

@@ -398,16 +398,6 @@ class _SensorGrid extends StatelessWidget {
         result: SensorEvaluator.evaluateWaterTemp(reading?.waterTemperature),
         range: '≤ ${SensorThresholds.waterTempMax} °C',
       ),
-      _CardData(
-        label: 'Kelembapan',
-        value: reading?.airHumidity?.toStringAsFixed(1),
-        unit: '%',
-        icon: Icons.water_outlined,
-        accent: const Color(0xFFE7683F),
-        result: SensorEvaluator.evaluateHumidity(reading?.airHumidity),
-        range:
-            '${SensorThresholds.humidityMin.toInt()}–${SensorThresholds.humidityMax.toInt()} %',
-      ),
     ];
 
     return GridView.count(

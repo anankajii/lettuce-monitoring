@@ -125,7 +125,13 @@ class SensorEvaluator {
 
   static ParameterResult evaluateTds(double? v) {
     final pct = _pct(v, SensorThresholds.tdsScaleMin, SensorThresholds.tdsScaleMax);
-    if (v == null) return const ParameterResult(status: SensorStatus.unknown, scalePct: 0);
+    if (!SensorThresholds.tdsScaleVerified || v == null) {
+      return const ParameterResult(
+        status: SensorStatus.unknown,
+        scalePct: 0,
+        recommendation: 'Skala TDS belum terverifikasi; TDS belum dapat dinilai.',
+      );
+    }
     final warn = SensorThresholds.tdsMax * SensorThresholds.tdsWarning;
     if (v < SensorThresholds.tdsMin) {
       return ParameterResult(
@@ -148,6 +154,12 @@ class SensorEvaluator {
   static ParameterResult evaluateWaterTemp(double? v) {
     final pct = _pct(v, SensorThresholds.waterTempScaleMin, SensorThresholds.waterTempScaleMax);
     if (v == null) return const ParameterResult(status: SensorStatus.unknown, scalePct: 0);
+    if (v < SensorThresholds.waterTempMin) {
+      return ParameterResult(
+        status: SensorStatus.danger, scalePct: pct,
+        recommendation: 'Periksa kondisi lingkungan dan suhu larutan.',
+      );
+    }
     if (v > SensorThresholds.waterTempMax) {
       return ParameterResult(
         status: SensorStatus.danger, scalePct: pct,
@@ -189,11 +201,17 @@ class SensorEvaluator {
         unknownCount: 0, totalCount: 0, affectedParams: [],
       );
     }
+    if (isStale(reading.timestamp)) {
+      return const OverallResult(
+        status: OverallStatus.noData,
+        normalCount: 0, warningCount: 0, dangerCount: 0,
+        unknownCount: 3, totalCount: 3, affectedParams: [],
+      );
+    }
     final map = {
       'pH Air': evaluatePh(reading.ph),
       'TDS': evaluateTds(reading.tds),
       'Suhu Air': evaluateWaterTemp(reading.waterTemperature),
-      'Kelembapan': evaluateHumidity(reading.airHumidity),
     };
     int n = 0, w = 0, d = 0, u = 0;
     final affected = <String>[];
@@ -210,6 +228,8 @@ class SensorEvaluator {
       overall = OverallStatus.actionRequired;
     } else if (w > 0) {
       overall = OverallStatus.needsAttention;
+    } else if (u > 0) {
+      overall = OverallStatus.noData;
     } else if (n > 0) {
       overall = OverallStatus.good;
     } else {

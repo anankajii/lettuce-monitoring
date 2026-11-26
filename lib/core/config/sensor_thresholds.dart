@@ -8,11 +8,14 @@ class SensorThresholds {
   static const double phMax      = 6.5;
   static const double phWarning  = 0.2; // zona waspada dari batas
 
-  static const double tdsMin     = 560;
-  static const double tdsMax     = 840;
+  // Skala 500 (faktor konversi 0.5) aktif: rentang optimal selada 600–900 ppm.
+  static const bool tdsScaleVerified = true;
+  static const double tdsMin     = 600;
+  static const double tdsMax     = 900;
   static const double tdsWarning = 0.10; // 10% dari batas
 
-  static const double waterTempMax     = 25.0;
+  static const double waterTempMin     = 18.0;
+  static const double waterTempMax     = 26.0;
   static const double waterTempWarning = 0.5;
 
   static const double humidityMin = 50.0;

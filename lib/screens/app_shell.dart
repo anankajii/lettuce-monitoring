@@ -21,34 +21,69 @@ class _AppShellState extends State<AppShell> {
   final _firebase = FirebaseService();
 
   late final List<Widget> _screens = [
-    StreamBuilder(
-      stream: _firebase.watchLatestSensor(),
-      builder: (context, snapshot) {
-        // ponytail: fallback ke DemoData jika Firebase error/kosong, remove when DB reliable
-        if (snapshot.hasError) {
-          debugPrint('Firebase error: ${snapshot.error}');
-        }
-        final reading = snapshot.data ?? DemoData.latest;
-        return DashboardScreen(reading: reading);
-      },
-    ),
-    StreamBuilder<SensorReading?>(
-      stream: _firebase.watchLatestSensor(),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          debugPrint('Firebase monitor error: ${snapshot.error}');
-        }
-        final reading = snapshot.data ?? DemoData.latest;
-        return MonitoringScreen(
-          reading: reading,
-          lastSynced: reading.timestamp,
-        );
-      },
-    ),
-    const HistoryScreen(),
-    const AnalysisScreen(),
-    const DetectionScreen(),
-  ];
+      // 0: Beranda
+      StreamBuilder<SensorReading?>(
+        stream: _firebase.watchLatestSensor(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            debugPrint('Firebase error: ${snapshot.error}');
+          }
+          if (snapshot.hasData && snapshot.data != null) {
+            _firebase.recordHistoryIfHourly(snapshot.data!);
+          }
+          final reading = snapshot.data ?? (snapshot.hasData ? null : DemoData.latest);
+          return DashboardScreen(reading: reading);
+        },
+      ),
+      // 1: Monitor
+      StreamBuilder<SensorReading?>(
+        stream: _firebase.watchLatestSensor(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            debugPrint('Firebase monitor error: ${snapshot.error}');
+          }
+          final reading = snapshot.data ?? (snapshot.hasData ? null : DemoData.latest);
+          return MonitoringScreen(
+            reading: reading,
+            lastSynced: reading?.timestamp,
+          );
+        },
+      ),
+      // 2: Riwayat
+      const HistoryScreen(),
+      // 3: Analisis
+      StreamBuilder<SensorReading?>(
+        stream: _firebase.watchLatestSensor(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            debugPrint('Firebase analysis error: ${snapshot.error}');
+          }
+          final reading = snapshot.data ?? (snapshot.hasData ? null : DemoData.latest);
+          return AnalysisScreen(reading: reading);
+        },
+      ),
+      // 4: Deteksi
+      StreamBuilder<bool>(
+        stream: _firebase.watchDeviceOnline('esp32_01'),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            debugPrint('Firebase device online error: ${snapshot.error}');
+          }
+          final online = snapshot.data ?? false;
+          return StreamBuilder<DateTime?>(
+            stream: _firebase.watchDeviceLastSeen('esp32_01'),
+            builder: (context, snapshot2) {
+              final lastSeen = snapshot2.data;
+              return DetectionScreen(
+                esp32Online: online,
+                esp32LastSeen: lastSeen,
+                onRequestEsp32Photo: () => debugPrint('Request photo'),
+              );
+            },
+          );
+        },
+      ),
+    ];
 
   @override
   Widget build(BuildContext context) {

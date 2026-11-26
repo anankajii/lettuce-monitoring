@@ -284,7 +284,7 @@ class _DetectionScreenState extends State<DetectionScreen> {
             icon: _loading 
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)))
                 : const Icon(Icons.flash_on),
-            label: const Text('Trigger & Capture'),
+            label: const Text('Ambil gambar dengan ESP32'),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF0891B2),
             ),
@@ -406,20 +406,6 @@ class _Esp32Panel extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onRequestPhoto != null)
-                OutlinedButton.icon(
-                  onPressed: onRequestPhoto,
-                  icon: const Icon(Icons.camera_alt_outlined, size: 16),
-                  label: const Text('Minta Foto ESP32'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
             ],
           ),
 
@@ -450,20 +436,6 @@ class _Esp32Panel extends StatelessWidget {
                   unit: '°C',
                   icon: Icons.device_thermostat_rounded,
                   color: const Color(0xFF2878C8),
-                ),
-                _SensorMini(
-                  label: 'Udara',
-                  value: _fmtVal(reading!.airTemperature, decimals: 1),
-                  unit: '°C',
-                  icon: Icons.thermostat_rounded,
-                  color: const Color(0xFFE7683F),
-                ),
-                _SensorMini(
-                  label: 'Humid',
-                  value: _fmtVal(reading!.airHumidity, decimals: 1),
-                  unit: '%',
-                  icon: Icons.water_outlined,
-                  color: const Color(0xFF059669),
                 ),
               ],
             ),

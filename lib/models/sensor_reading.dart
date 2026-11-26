@@ -37,10 +37,10 @@ class SensorReading {
   }
 
   static double? _toDouble(Object? value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-    return double.tryParse(value?.toString() ?? '');
+    final parsed = value is num
+        ? value.toDouble()
+        : double.tryParse(value?.toString() ?? '');
+    return parsed != null && parsed.isFinite ? parsed : null;
   }
 
   static int? _toInt(Object? value) {
@@ -52,7 +52,11 @@ class SensorReading {
 
   static DateTime _toDateTime(Object? value) {
     if (value is num) {
-      return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+      final raw = value.toInt();
+      if (raw <= 0) return DateTime.now();
+      // Konversi detik ke milidetik bila timestamp 10-digit (epoch seconds).
+      final ms = raw < 100000000000 ? raw * 1000 : raw;
+      return DateTime.fromMillisecondsSinceEpoch(ms);
     }
 
     return DateTime.tryParse(value?.toString() ?? '') ?? DateTime.now();

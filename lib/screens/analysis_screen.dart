@@ -10,19 +10,9 @@ class AnalysisScreen extends StatelessWidget {
   const AnalysisScreen({
     super.key,
     this.reading,
-    this.lastDetectionLabel,
-    this.lastDetectionConfidence,
-    this.lastDetectionTime,
-    this.onOpenDetection,
   });
 
   final SensorReading? reading;
-
-  /// Label hasil deteksi terakhir, mis. 'healthy' / 'unhealthy'
-  final String? lastDetectionLabel;
-  final double? lastDetectionConfidence;
-  final DateTime? lastDetectionTime;
-  final VoidCallback? onOpenDetection;
 
   @override
   Widget build(BuildContext context) {
@@ -119,26 +109,18 @@ class AnalysisScreen extends StatelessWidget {
                   result: wTemp,
                   summary: reading?.waterTemperature != null
                       ? '${reading!.waterTemperature!.toStringAsFixed(1)} °C, '
-                        'batas ${SensorThresholds.waterTempMax} °C'
+                        'ideal ${SensorThresholds.waterTempMin}–${SensorThresholds.waterTempMax} °C'
                       : 'Tidak ada data suhu air',
                   details: [
                     _Detail('Terukur',
                         reading?.waterTemperature?.toStringAsFixed(1) ?? '—',
                         '°C'),
-                    _Detail('Batas maks',
-                        '${SensorThresholds.waterTempMax}', '°C'),
+                    _Detail('Rentang ideal',
+                        '${SensorThresholds.waterTempMin}–${SensorThresholds.waterTempMax}',
+                        '°C'),
                     _Detail('Status', wTemp.status.label, ''),
                   ],
                   recommendation: wTemp.recommendation,
-                ),
-                const SizedBox(height: 10),
-
-                // Kondisi Tanaman
-                _PlantConditionCard(
-                  label: lastDetectionLabel,
-                  confidence: lastDetectionConfidence,
-                  detectedAt: lastDetectionTime,
-                  onOpenDetection: onOpenDetection,
                 ),
               ]),
             ),
@@ -391,133 +373,4 @@ class _ExpandableParamState extends State<_ExpandableParam> {
   }
 }
 
-// ── Plant Condition Card ───────────────────────────────────────────────────────
-
-class _PlantConditionCard extends StatelessWidget {
-  const _PlantConditionCard({
-    required this.label,
-    required this.confidence,
-    required this.detectedAt,
-    required this.onOpenDetection,
-  });
-  final String? label;
-  final double? confidence;
-  final DateTime? detectedAt;
-  final VoidCallback? onOpenDetection;
-
-  bool get _hasData => label != null;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _hasData
-                      ? const Color(0xFFE8F5EF)
-                      : const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _hasData ? (label ?? '') : 'Menunggu data',
-                  style: TextStyle(
-                    color: _hasData
-                        ? const Color(0xFF16845B)
-                        : const Color(0xFF9CA3AF),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Kondisi Tanaman',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700)),
-                    Text('Hasil deteksi terakhir',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF6B7280))),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (_hasData) ...[
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-            if (confidence != null)
-              Row(
-                children: [
-                  const Expanded(
-                      child: Text('Keyakinan',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF6B7280)))),
-                  Text(
-                      '${(confidence! * 100).toStringAsFixed(1)}%',
-                      style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
-                ],
-              ),
-            if (detectedAt != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Expanded(
-                      child: Text('Waktu deteksi',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF6B7280)))),
-                  Text(_fmtDateTime(detectedAt!),
-                      style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ],
-          ],
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: onOpenDetection,
-              icon: const Icon(Icons.camera_alt_rounded, size: 16),
-              label: const Text('Buka Kamera Deteksi'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _fmtDateTime(DateTime t) {
-    final l = t.toLocal();
-    return '${l.day}/${l.month}/${l.year} '
-        '${l.hour.toString().padLeft(2, '0')}:'
-        '${l.minute.toString().padLeft(2, '0')}';
-  }
-}
+// (Removed _PlantConditionCard — detection is separate from rule-based analysis)

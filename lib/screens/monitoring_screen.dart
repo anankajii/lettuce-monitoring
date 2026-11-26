@@ -105,33 +105,7 @@ class MonitoringScreen extends StatelessWidget {
             result: SensorEvaluator.evaluateWaterTemp(
                 reading?.waterTemperature),
           ),
-          const SizedBox(height: 12),
-          _SensorRow(
-            icon: Icons.thermostat_rounded,
-            accent: const Color(0xFFE7683F),
-            label: 'Suhu Udara',
-            device: 'DHT22',
-            value: reading?.airTemperature?.toStringAsFixed(1),
-            unit: '°C',
-            rangeText:
-                'Ideal ${SensorThresholds.airTempMin.toInt()}–${SensorThresholds.airTempMax.toInt()} °C',
-            result: SensorEvaluator.evaluateAirTemp(
-                reading?.airTemperature),
-          ),
-          const SizedBox(height: 12),
-          _SensorRow(
-            icon: Icons.water_outlined,
-            accent: const Color(0xFF059669),
-            label: 'Kelembapan Udara',
-            device: 'DHT22',
-            value: reading?.airHumidity?.toStringAsFixed(1),
-            unit: '%',
-            rangeText:
-                'Ideal ${SensorThresholds.humidityMin.toInt()}–${SensorThresholds.humidityMax.toInt()} %',
-            result: SensorEvaluator.evaluateHumidity(
-                reading?.airHumidity),
-          ),
-        ],
+          ],
       ),
     );
   }
